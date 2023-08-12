@@ -12,5 +12,4 @@ productRouter.route('/:id')
     .delete(deleteProduct)
 
 
-
 export default productRouter
