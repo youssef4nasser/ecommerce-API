@@ -1,12 +1,11 @@
-import { json } from "express"
-import { productModel } from "../../../database/models/product.model.js"
-import { AppError } from "../../utils/AppError.js"
-import { catchError } from "../../utils/catchError.js"
 import slugify from "slugify"
+import { productModel } from "../../../database/models/product.model.js"
+import { ApiFeatures } from "../../utils/ApiFeatures.js"
+import { catchError } from "../../utils/catchError.js"
+import { AppError } from "../../utils/AppError.js"
 
 export const addProduct = catchError(
     async(req, res, next)=>{
-        req.body.slug = slugify(req.body.title)
         const product = new productModel(req.body)
         await product.save()
         return res.status(201).json({message: "success", product})
@@ -15,31 +14,30 @@ export const addProduct = catchError(
 
 export const getAllProducts = catchError(
     async(req, res, next)=>{
-        const PAGE_LIMIT = 5
-        let PAGE_NUMBER = req.query.page * 1 || 1
-        if(PAGE_NUMBER <= 0) PAGE_NUMBER = 1
-        const SKIP = (PAGE_NUMBER - 1) * PAGE_LIMIT
-
-        // Filter
-        const filterObj = req.query
-        let excludedQuery = ['page', 'sort', 'fields', 'keyword']
-        excludedQuery.forEach((q)=>{
-            delete filterObj[q]
-        })
-
-        filterObj = JSON.stringify(filterObj)
-        filterObj = filterObj.replace(/\b(gt|gte|lt|lte)\b/g, match=>`$${match}`)
-        filterObj = JSON.parse(filterObj)
-
-        const products = await productModel.find(filterObj).skip(SKIP).limit(PAGE_LIMIT)
-        return res.status(201).json({ message: "success", page: PAGE_NUMBER, products,})
+        let apiFeatures = new ApiFeatures(productModel.find(), req.query)
+        .paginate().fields().filter().sort().search()
+        
+        // exeute query
+        const products = await apiFeatures.mongooseQuery
+        return res.status(201).json({ message: "success",
+        pageNumber: apiFeatures.pageNumber,
+        resulte: products.length,
+        products})
     }
+)
+
+export const getProduct = catchError(
+    async(req,res,next)=> {
+        const {id} = req.params
+        const product = await productModel.findById(id)
+        !product && next(new AppError("product not found", 404))
+        product && res.status(201).json({message: "success", product})    }
 )
 
 export const updateProduct = catchError(
     async(req, res, next)=>{
         const {id} = req.params
-        if(req.body.title) req.body.slug = slugify(req.body.title)
+        if(req.body.name) req.body.slug = slugify(req.body.name)
         const product = await productModel.findByIdAndUpdate(id, req.body, {new: true})
         !product && next(new AppError("product not found", 404))
         product && res.status(201).json({message: "success", product})
@@ -54,3 +52,6 @@ export const deleteProduct = catchError(
         Product && res.status(201).json({message: "success"})
     }
 )
+
+
+
