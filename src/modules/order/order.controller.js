@@ -4,6 +4,7 @@ import { orderModel } from "../../../database/models/order.model.js"
 import { productModel } from "../../../database/models/product.model.js"
 import { AppError } from "../../utils/AppError.js"
 import { catchError } from "../../utils/catchError.js"
+import { userModel } from '../../../database/models/user.model.js';
 
 export const cashOrder = catchError(
     async(req, res, next)=>{
@@ -120,10 +121,46 @@ export const createOnlineOrder = catchError(
       
         // Handle the event
         if(event.type == "checkout.session.completed"){
-            const checkoutSessionCompleted = event.data.object;
+            card(event.data.object)
         }else{
             console.log(`Unhandled event type ${event.type}`);
         }
         // Return a 200 response to acknowledge receipt of the event
         response.send();
 })
+
+
+async function card(e){
+    // get cart (cartID)
+    const cart = await cartModel.findById(e.client_reference_id)
+    if(!cart) return next(new AppError("Cart not found", 404))
+    let user = await userModel.findOne({email: e.customer_email})
+    // create order
+    const order = new orderModel({
+        user: user._id,
+        cartItems: cart.cartItems,
+        totalOrderPrice: e.amount_total / 100,
+        shippingAddress: e.metadata.shippingAddress,
+        paymentType: "card",
+        isPaid: true,
+        paidAt: Date.now()
+    })
+    await order.save()
+
+    if(order){
+        // increment sold & decrement quantity
+        const potions = cart.cartItems.map(item =>({
+            updateOne: {
+                filter: {_id: item.product},
+                update: {$inc: {stock: -item.quantity, sold: item.quantity}}
+            }
+        }))
+        await productModel.bulkWrite(potions)
+        // clear user cart
+        await cartModel.findByIdAndDelete({user: user._id})
+        res.status(201).json({message: 'success', order})
+    }
+    else{
+        return next(new AppError('Error in cart id', 404))
+    }
+}
