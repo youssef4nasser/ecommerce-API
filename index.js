@@ -12,9 +12,9 @@ app.use(cors())
 
 app.use(express.json())
 
-app.use("/", (req, res,)=>{
-    console.log("Welcome")
-})
+// app.use("/", (req, res,)=>{
+//     console.log("Welcome")
+// })
 
 bootstrap(app)
 
