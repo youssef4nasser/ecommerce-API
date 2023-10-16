@@ -10,7 +10,7 @@ const cartRouter = express.Router()
 cartRouter.route('/')
     .post(protectedRoutes, allowedTo('user'), validate(validationaAddToCart), addProductToCart)
     .get(protectedRoutes, allowedTo('user'), getLogedUserCart)
-    .delete(protectedRoutes, allowedTo('user'), validate(), clearCartItems)
+    .delete(protectedRoutes, allowedTo('user'), clearCartItems)
 
 cartRouter.post("/coupons", protectedRoutes, allowedTo('user'), validate(validationCoupon), applyCoupon)
 
