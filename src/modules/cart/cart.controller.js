@@ -57,6 +57,14 @@ export const removeProductFromCart = catchError(
     }
 )
 
+// clear Cart Items
+export const clearCartItems = catchError(
+    async (req, res, next) => {
+        const result = await cartModel.findOneAndUpdate({user: req.user._id}, {cartItems: []}, {new: true})
+        if (!result) return next(new AppError('no cart found', 404));
+        return res.status(201).json({ message: "success" });
+})
+
 export const updateQuantity = catchError(
     async(req, res, next)=>{
         const product = await productModel.findById(req.params.id).select('price')
