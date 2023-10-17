@@ -89,16 +89,19 @@ export const createOnlineOrder = catchError(
       
         // Handle the event
         if(event.type == "checkout.session.completed"){
-            card(event.data.object)
-            console.log(event.data.object);
+            try {
+                await card(event.data.object, res, next)
+                // Return a 200 res to acknowledge receipt of the event
+                res.send();
+            } catch (err) {
+                next(err);
+            }
         }else{
             return res.status(400).json({message: `Payment failed and order rejected ${event.type}`})
         }
-        // Return a 200 res to acknowledge receipt of the event
-        res.send();
 })
 
-async function card(e, res){
+async function card(e, res, next){
     // get cart (cartID)
     const cart = await cartModel.findById(e.client_reference_id)
     if(!cart) return next(new AppError("Cart not found", 404))
