@@ -10,7 +10,7 @@ const app = express()
 const port = process.env.PORT || 5000
 
 app.use(cors())
-
+// webhook stripe payment
 app.post('/webhook', express.raw({type: 'application/json'}), createOnlineOrder);
 
 app.use(express.json()) 

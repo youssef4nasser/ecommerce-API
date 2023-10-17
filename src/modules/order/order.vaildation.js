@@ -7,9 +7,6 @@ export const validationashippingAddres = Joi.object({
         city: Joi.string().required(),
         street: Joi.string().required(),
         phone: Joi.string().required(),
-    }
-})
-
-export const validationaRemoveFromWishlist = Joi.object({
-    product: idVaildation
+    },
+    id: idVaildation
 })

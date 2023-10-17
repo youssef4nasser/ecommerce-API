@@ -9,9 +9,9 @@ export class ApiFeatures {
         let pageNumber = this.queryString.pageNumber * 1 || 1
         if(this.queryString.pageNumber <= 0) pageNumber = 1
 
-        const SKIP = (pageNumber - 1) * 5
+        const SKIP = (pageNumber - 1) * 10
         this.pageNumber = pageNumber
-        this.mongooseQuery.skip(SKIP).limit(5);
+        this.mongooseQuery.skip(SKIP).limit(10);
         return this
     }
     

@@ -41,7 +41,7 @@ export const cashOrder = catchError(
     }
 )
 
-const stripe = new Stripe('sk_test_51NotS6HLeUVvC3Quw1NbYvAQeEDsoZaXSG3NPBhiq4TXMe93JIj8yjCGMfLJU4jzp4YrTBfSI1AcnKPijJ90EM6H00HdK87C1k');
+const stripe = new Stripe(process.env.STRIPE_KEY);
 
 export const createCheckoutSession = catchError(
     async(req,res,next)=>{
@@ -76,27 +76,27 @@ export const createCheckoutSession = catchError(
 )
 
 export const createOnlineOrder = catchError(
-    async (request, response) => {
-        const sig = request.headers['stripe-signature'].toString()
+    async (req, res, next) => {
+        const sig = req.headers['stripe-signature'].toString()
       
         let event;
-      
+    
         try {
-          event = stripe.webhooks.constructEvent(request.body, sig, "whsec_MFaqjIuzouBUFQvSDglqZQqTekmCrtSJ");
+          event = stripe.webhooks.constructEvent(req.body, sig, process.env.END_POINT_SECRET);
         } catch (err) {
-            return response.status(400).send(`Webhook Error: ${err.message}`);
+            return res.status(400).send(`Webhook Error: ${err.message}`);
         }
       
         // Handle the event
         if(event.type == "checkout.session.completed"){
             card(event.data.object)
+            console.log(event.data.object);
         }else{
-            console.log(`Unhandled event type ${event.type}`);
+            return res.status(400).json({message: `Payment failed and order rejected ${event.type}`})
         }
-        // Return a 200 response to acknowledge receipt of the event
-        response.send();
+        // Return a 200 res to acknowledge receipt of the event
+        res.send();
 })
-
 
 async function card(e, res){
     // get cart (cartID)
