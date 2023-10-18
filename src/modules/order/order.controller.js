@@ -75,43 +75,17 @@ export const createCheckoutSession = catchError(
     }
 )
 
-export const createOnlineOrder = catchError(
-    async (req, res, next) => {
-        const sig = req.headers['stripe-signature'].toString()
-      
-        let event;
-    
-        try {
-          event = stripe.webhooks.constructEvent(req.body, sig, process.env.END_POINT_SECRET);
-        } catch (err) {
-            return res.status(400).send(`Webhook Error: ${err.message}`);
-        }
-      
-        // Handle the event
-        if(event.type == "checkout.session.completed"){
-            try {
-                await card(event.data.object, res, next)
-                // Return a 200 res to acknowledge receipt of the event
-                res.send();
-            } catch (err) {
-                next(err);
-            }
-        }else{
-            return res.status(400).json({message: `Payment failed and order rejected ${event.type}`})
-        }
-})
-
-async function card(e, res, next){
+if(event.type == "checkout.session.completed"){
     // get cart (cartID)
-    const cart = await cartModel.findById(e.client_reference_id)
+    const cart = await cartModel.findById(event.client_reference_id.toString())
     if(!cart) return next(new AppError("Cart not found", 404))
-    let user = await userModel.findOne({email: e.customer_email})
+    let user = await userModel.findOne({email: event.customer_email})
     // create order
     const order = new orderModel({
         user: user._id,
         cartItems: cart.cartItems,
-        totalOrderPrice: e.amount_total / 100,
-        shippingAddress: e.metadata.shippingAddress,
+        totalOrderPrice: event.amount_total / 100,
+        shippingAddress: event.metadata.shippingAddress,
         paymentType: "card",
         isPaid: true,
         paidAt: Date.now()
@@ -129,12 +103,13 @@ async function card(e, res, next){
         await productModel.bulkWrite(potions)
         // clear user cart
         await cartModel.findByIdAndDelete({user: user._id})
-        return res.status(201).json({message: 'success', order})
+        return res.status(201).json({message: 'uccess', order})
     }
     else{
         return next(new AppError('Error in cart id', 404))
     }
 }
+
 
 export const getSpecificOrder = catchError(
     async(req,res,next)=>{
