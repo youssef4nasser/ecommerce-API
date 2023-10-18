@@ -101,7 +101,7 @@ export const createOnlineOrder = catchError(
                 cartItems: cart.cartItems,
                 totalOrderPrice: event.data.object.amount_total / 100,
                 shippingAddress: event.data.object.metadata,
-                paymentType: "card",
+                paymentMethond: "card",
                 isPaid: true,
                 paidAt: Date.now()
             })
