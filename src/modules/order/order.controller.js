@@ -89,10 +89,10 @@ export const createOnlineOrder = catchError(
       
         // Handle the event
         if(event.type == "checkout.session.completed"){
-            // get cart (cartID)
-            const cart = await cartModel.findById(event.client_reference_id.toString())
-            if(!cart) return next(new AppError("Cart not found", 404))
             let user = await userModel.findOne({email: event.customer_email})
+            // get cart (cartID)
+            const cart = await cartModel.findById(user._id)
+            if(!cart) return next(new AppError("Cart not found", 404))
             // create order
             const order = new orderModel({
                 user: user._id,
@@ -116,10 +116,11 @@ export const createOnlineOrder = catchError(
                 await productModel.bulkWrite(potions)
                 // clear user cart
                 await cartModel.findByIdAndDelete({user: user._id})
-                return res.status(201).json({message: 'uccess', order})
-            }else{
-                    return next(new AppError('Error in cart id', 404))
-                }
+                return res.status(201).json({message: 'success', order})
+            }
+            else{
+                return next(new AppError('Error in cart id', 404))
+            }
 
         }else{
             return res.status(400).json({message: `Payment failed and order rejected ${event.type}`})
