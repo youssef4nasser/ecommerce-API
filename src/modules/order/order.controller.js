@@ -91,7 +91,7 @@ export const createOnlineOrder = catchError(
         if(event.type == "checkout.session.completed"){
             let user = await userModel.findOne({email: event.customer_email})
             // get cart (cartID)
-            const cart = await cartModel.findById(user._id)
+            const cart = await cartModel.findById(user._id.toString())
             if(!cart) return next(new AppError("Cart not found", 404))
             // create order
             const order = new orderModel({
