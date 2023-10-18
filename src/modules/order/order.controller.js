@@ -117,7 +117,7 @@ export const createOnlineOrder = catchError(
                 }))
                 await productModel.bulkWrite(potions)
                 // clear user cart
-                await cartModel.findByIdAndDelete({user: user._id})
+                await cartModel.findByIdAndDelete(user._id)
                 return res.status(201).json({message: 'success', order})
             }
             else{
