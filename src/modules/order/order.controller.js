@@ -75,41 +75,56 @@ export const createCheckoutSession = catchError(
     }
 )
 
-if(event.type == "checkout.session.completed"){
-    // get cart (cartID)
-    const cart = await cartModel.findById(event.client_reference_id.toString())
-    if(!cart) return next(new AppError("Cart not found", 404))
-    let user = await userModel.findOne({email: event.customer_email})
-    // create order
-    const order = new orderModel({
-        user: user._id,
-        cartItems: cart.cartItems,
-        totalOrderPrice: event.amount_total / 100,
-        shippingAddress: event.metadata.shippingAddress,
-        paymentType: "card",
-        isPaid: true,
-        paidAt: Date.now()
-    })
-    await order.save()
+export const createOnlineOrder = catchError(
+    async (req, res, next) => {
+        const sig = req.headers['stripe-signature'].toString()
+      
+        let event;
+    
+        try {
+          event = stripe.webhooks.constructEvent(req.body, sig, process.env.END_POINT_SECRET);
+        } catch (err) {
+            return res.status(400).send(`Webhook Error: ${err.message}`);
+        }
+      
+        // Handle the event
+        if(event.type == "checkout.session.completed"){
+            // get cart (cartID)
+            const cart = await cartModel.findById(event.client_reference_id.toString())
+            if(!cart) return next(new AppError("Cart not found", 404))
+            let user = await userModel.findOne({email: event.customer_email})
+            // create order
+            const order = new orderModel({
+                user: user._id,
+                cartItems: cart.cartItems,
+                totalOrderPrice: event.amount_total / 100,
+                shippingAddress: event.metadata.shippingAddress,
+                paymentType: "card",
+                isPaid: true,
+                paidAt: Date.now()
+            })
+            await order.save()
 
-    if(order){
-        // increment sold & decrement quantity
-        const potions = cart.cartItems.map(item =>({
-            updateOne: {
-                filter: {_id: item.product},
-                update: {$inc: {stock: -item.quantity, sold: item.quantity}}
-            }
-        }))
-        await productModel.bulkWrite(potions)
-        // clear user cart
-        await cartModel.findByIdAndDelete({user: user._id})
-        return res.status(201).json({message: 'uccess', order})
-    }
-    else{
-        return next(new AppError('Error in cart id', 404))
-    }
-}
+            if(order){
+                // increment sold & decrement quantity
+                const potions = cart.cartItems.map(item =>({
+                    updateOne: {
+                        filter: {_id: item.product},
+                        update: {$inc: {stock: -item.quantity, sold: item.quantity}}
+                    }
+                }))
+                await productModel.bulkWrite(potions)
+                // clear user cart
+                await cartModel.findByIdAndDelete({user: user._id})
+                return res.status(201).json({message: 'uccess', order})
+            }else{
+                    return next(new AppError('Error in cart id', 404))
+                }
 
+        }else{
+            return res.status(400).json({message: `Payment failed and order rejected ${event.type}`})
+        }
+})
 
 export const getSpecificOrder = catchError(
     async(req,res,next)=>{
