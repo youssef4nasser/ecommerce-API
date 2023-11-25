@@ -18,3 +18,8 @@ export const confirmValidation = Joi.object({
     email: emailValidation,
     code: Joi.string().length(6)
 })
+
+export const signInGoogleValidationa = Joi.object({
+    idToken:  Joi.string().required(),
+})
+

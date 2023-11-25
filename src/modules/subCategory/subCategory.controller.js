@@ -30,7 +30,7 @@ export const getAllSubCategories = catchError(
         const subCategories = await apiFeatures.mongooseQuery
         
         return res.status(201).json({ message: "success",
-        pageNumber: apiFeatures.pageNumber,
+        page: apiFeatures.page,
         resulte: subCategories.length,
         subCategories})
     }

@@ -20,7 +20,7 @@ export const getAllUsers = catchError(
         const user = await apiFeatures.mongooseQuery
         
         return res.status(201).json({ message: "success",
-        pageNumber: apiFeatures.pageNumber,
+        page: apiFeatures.page,
         resulte: user.length,
         user})
     }

@@ -52,22 +52,19 @@ const userSchema = new Schema({
         street: String,
         phone: String
     }],
+    provider:{
+        type: String,
+        enum: ['google', 'facebook', 'systeme'],
+        default:'systeme'
+    }
 },{
     timestamps: true
-})
-
-// check if user is exist or not
-userSchema.pre('save', async function(next) {
-    const isExest = await mongoose.models["User"].findOne({email : this.email})
-    if (isExest) return next(new AppError(`${this.email} already exist`, 409));
-       next();
 })
 
 // Hashing the Password before saving it to DB
 userSchema.pre('save', function(){
     this.password = bcrypt.hashSync(this.password, Number(process.env.SALT_ROUND))
 })
-
 // Hashing a new Password after update old password
 userSchema.pre('findOneAndUpdate', function(){
     if(this._update.password) this._update.password = bcrypt.hashSync(this._update.password, Number(process.env.SALT_ROUND))

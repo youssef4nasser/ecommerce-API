@@ -75,16 +75,16 @@ const productSchema = new Schema({
     timestamps: true,
     toJSON: {virtuals: true}
 })
-
-productSchema.pre('save', async function(next) {
-    const isExest = await mongoose.models["Product"].findOne({name : this.name})
-    if (isExest) return next(new AppError(`${this.name} already exist`, 409));
-       next();
-})
-// slug name
+// slug name when ceate 
 productSchema.pre('save', function(){
     this.slug = slugify(this.name)
 })
+// slug name when updating
+productSchema.pre('findOneAndUpdate', function() {
+    if(this._update.name){
+        this._update.slug = slugify(this._update.name);
+    }
+});
 // virtual field reviews
 productSchema.virtual('reviews', {
     ref: 'Review',
@@ -94,14 +94,6 @@ productSchema.virtual('reviews', {
 // populate on virtual field reviews
 productSchema.pre(['find', 'findOne'], function(){
     this.populate('reviews')
-})
-// check if name already exis or not when update product
-productSchema.pre('findOneAndUpdate', async function(next){
-    const duplicate = await this.model.findOne({ name: this._update.name });
-    if(duplicate){
-        return next(new AppError(`The ${this._update.name} already exist`, 409));
-    }
-    next();
 })
 
 export const productModel = model('Product', productSchema)

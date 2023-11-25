@@ -13,7 +13,7 @@ brandRouter.route('/')
 
 brandRouter.route('/:id')
     .get(validate(idVaildationSchema), getBrand)
-    .put(protectedRoutes, allowedTo('admin'), validate(validationUpdateBrand), updateBrand)
+    .put(fileUpload(fileValidation.image).single('image'), protectedRoutes, allowedTo('admin'), validate(validationUpdateBrand), updateBrand)
     .delete(protectedRoutes, allowedTo('admin'), validate(idVaildationSchema), deleteBrand)
 
 export default brandRouter

@@ -25,10 +25,4 @@ const couponSchema = new Schema({
     timestamps: true
 })
 
-couponSchema.pre('save', async function(next) {
-    const isExest = await mongoose.models["Coupon"].findOne({code : this.code})
-    if (isExest) return next(new AppError(`Coupon ${this.code} already exist`, 409));
-       next();
-})
-
 export const couponModel = model('Coupon', couponSchema)

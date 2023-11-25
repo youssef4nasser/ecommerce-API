@@ -6,17 +6,16 @@ export class ApiFeatures {
 
     // pagination
     paginate(){
-        let pageNumber = this.queryString.pageNumber * 1 || 1
-        if(this.queryString.pageNumber <= 0) pageNumber = 1
+        let page = this.queryString.page * 1 || 1
+        if(this.queryString.page <= 0) page = 1
 
-        const SKIP = (pageNumber - 1) * 10
-        this.pageNumber = pageNumber
+        const SKIP = (page - 1) * 10
+        this.page = page
         this.mongooseQuery.skip(SKIP).limit(10);
         return this
     }
     
     // Filter
-    
     filter(){
         let filterObj = {...this.queryString}
         let excludedQuery = ['page', 'sort', 'fields', 'keyword']

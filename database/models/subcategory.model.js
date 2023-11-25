@@ -25,24 +25,16 @@ const subCategorySchema = new Schema({
 },{
     timestamps: true
 })
-
-subCategorySchema.pre('save', async function(next) {
-    const isExest = await mongoose.models["SubCategory"].findOne({name : this.name})
-    if (isExest) return next(new AppError(`${this.name} already exist`, 409));
-       next();
-})
-
+// slug name when create
 subCategorySchema.pre('save', function(){
     this.slug = slugify(this.name)
 })
 
-// check if name already exis or not when update subCategory
-subCategorySchema.pre('findOneAndUpdate', async function(next){
-    const duplicate = await this.model.findOne({ name: this._update.name });
-    if(duplicate){
-        return next(new AppError(`The ${this._update.name} already exist`, 409));
+// slug name when updating
+subCategorySchema.pre('findOneAndUpdate', function() {
+    if(this._update.name){
+        this._update.slug = slugify(this._update.name);
     }
-    next();
-})
+});
 
 export const subCategoryModel = model('SubCategory', subCategorySchema)
