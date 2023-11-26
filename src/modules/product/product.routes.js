@@ -1,19 +1,28 @@
-import express from "express"
-import { addProduct, deleteProduct, getAllProducts, getProduct, updateProduct } from "./product.controller.js"
-import { protectedRoutes } from "../../middleware/protectedRoutes.js"
-import { allowedTo } from "../../middleware/authorize.js"
-import { validate } from "../../middleware/validate.js"
-import { addProductValidation, deleteProductValidation, getProductValidation, updateProductValidation } from "./product.vaildation.js"
+import express from 'express'
+import * as controller from './product.controller.js'
+import { fileUploud, fileValidation } from '../../utils/multer.cloud.js'
+import { validate } from '../../middleware/validate.js'
+import { addProductValidation, updateProductValidation, idValidate } from './product.vaildation.js'
+import { authenticate } from '../../middleware/authenticate.js'
+import { allowedTo } from '../../middleware/authorize.js'
 
 const productRouter = express.Router()
 
 productRouter.route('/')
-    .post(protectedRoutes, allowedTo('admin'), validate(addProductValidation), addProduct)
-    .get(getAllProducts)
+    .post(authenticate, allowedTo("admin"),
+        fileUploud(fileValidation.image).fields([
+        { name: 'image', maxCount: 1 },
+        { name: 'images', maxCount: 8 },
+    ]),validate(addProductValidation), controller.addProduct)
+    .get(controller.getAllProducts)
 
 productRouter.route('/:id')
-    .get(validate(getProductValidation), getProduct)
-    .put(protectedRoutes, allowedTo('admin'), validate(updateProductValidation), updateProduct)
-    .delete(protectedRoutes, allowedTo('admin'), validate(deleteProductValidation), deleteProduct)
+    .get(validate(idValidate), controller.getProduct)
+    .put(authenticate, allowedTo("admin"), 
+    fileUploud(fileValidation.image).fields([
+        { name: 'image', maxCount: 1 },
+        { name: 'images', maxCount: 8 },
+    ]), validate(updateProductValidation), controller.updateProduct)
+    .delete(authenticate, allowedTo("admin"), validate(idValidate), controller.deleteProduct)
 
 export default productRouter

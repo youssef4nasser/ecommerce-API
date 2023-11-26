@@ -47,10 +47,51 @@ export const signIn = catchError(
             return next(new AppError('Incorrect email or password', 401))
             // generate an access token
             const token = jwt.sign({email: user.email, name: user.name, id: user._id, role: user.role}, process.env.myEcommerce)
-            res.status(201).json({message: 'Success', token})
+            return res.status(201).json({message: 'Success', token})
     }
 )
 
+// forget password
+export const forgetPassword = catchError(
+    async (req, res, next) => {
+        const {email} = req.body
+        const user = await userModel.findOne({email})
+        // if user not found
+        if (!user) return next(new AppError('User not found', 401))
+        // generate code
+        const codeConfirm = nanoid(6)
+        // Time expire code
+        const expireDateCode = Date.now() + 5 * 60 * 1000;
+        // Send email for user to confirm his email
+        sendEmail(user.email, "Your Password Reset Code (Valid 5 minutes)", htmlEmailTemplate(codeConfirm))
+        // update model and save it
+        user.expireDateCode = expireDateCode
+        user.codeConfirm = codeConfirm
+        user.save()
+        res.status(201).json({message: "Reset code sent to your email"})
+    }
+)
+
+// Verify Code and update password
+export const resetPassword = catchError(
+    async (req, res, next) => {
+        const {email, codeConfirm, newPassword} = req.body
+        // find user
+        const user = await userModel.findOne({email})
+        // if user not found
+        if (!user) return next(new AppError('user not found', 401))
+        // check codeConfirm
+        if(user.codeConfirm !== codeConfirm || user.expireDateCode < Date.now()) return next(new AppError('Invalid reset code or expired', 401))
+        // hash Password
+        const hashedPassword = bcrypt.hashSync(newPassword, 8);
+        // update model and save it
+        user.codeConfirm = null
+        user.password = hashedPassword
+        user.save()
+        res.status(201).json({message: "success", user})
+    }
+)
+// Sinup or Login with google
 export const loginGoogle= catchError(
     async(req,res,next)=>{
         const {idToken} = req.body

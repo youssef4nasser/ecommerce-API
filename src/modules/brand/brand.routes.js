@@ -1,19 +1,20 @@
-import express from "express"
-import { addBrand, deleteBrand, getAllBrands, getBrand, updateBrand } from "./brand.controller.js"
-import { validate } from "../../middleware/validate.js"
-import { idVaildationSchema, validationUpdateBrand, validationaAddBrand } from "./brand.vaildation.js"
-import { protectedRoutes } from "../../middleware/protectedRoutes.js"
-import { allowedTo } from "../../middleware/authorize.js"
-import {fileUpload, fileValidation} from "../../utils/multer.cloud.js"
+import express from 'express'
+import * as controller from './brand.controller.js'
+import { fileUploud, fileValidation } from '../../utils/multer.cloud.js'
+import { validate } from '../../middleware/validate.js'
+import { addBrandValidaion, headers, idValidate, updateBrandValidation } from './brand.validation.js'
+import { allowedTo } from '../../middleware/authorize.js'
+import { authenticate } from '../../middleware/authenticate.js'
+
 const brandRouter = express.Router()
 
 brandRouter.route('/')
-    .post(fileUpload(fileValidation.image).single('image'), validate(validationaAddBrand), addBrand)
-    .get(getAllBrands)
+    .post(validate(headers, true), authenticate, allowedTo("admin"), fileUploud(fileValidation.image).single("image"), validate(addBrandValidaion), controller.addBrand)
+    .get(controller.getAllBrands)
 
 brandRouter.route('/:id')
-    .get(validate(idVaildationSchema), getBrand)
-    .put(fileUpload(fileValidation.image).single('image'), protectedRoutes, allowedTo('admin'), validate(validationUpdateBrand), updateBrand)
-    .delete(protectedRoutes, allowedTo('admin'), validate(idVaildationSchema), deleteBrand)
+    .get(validate(idValidate), controller.getBrand)
+    .put(authenticate, allowedTo("admin"), fileUploud(fileValidation.image).single("image"), validate(updateBrandValidation), controller.updateBrand)
+    .delete(authenticate, allowedTo("admin"), validate(idValidate), controller.deleteBrand)
 
 export default brandRouter

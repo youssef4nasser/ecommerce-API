@@ -1,37 +1,32 @@
-import { brandModel } from "../../../database/models/brand.model.js"
-import { AppError } from "../../utils/AppError.js"
-import { catchError } from "../../utils/catchError.js"
-import { ApiFeatures } from "../../utils/ApiFeatures.js"
-import cloudinary from "../../utils/cloudinary.js"
+import { brandModel } from "../../../DataBase/models/brand.model.js";
+import { AppError } from "../../utils/AppError.js";
+import { catchError } from "../../utils/catchError.js";
+import cloudinary from "../../utils/cloudinary.js";
+import { ApiFeatures } from "../../utils/ApiFeature.js";
 
 export const addBrand = catchError(
-    async(req, res, next)=>{
-        // check if name already exis or not when create brand
+    async (req, res, next)=>{
+        // check if Brand already exist or no
         const isExist = await brandModel.findOne({name: req.body.name})
-        if (isExist) return next(new AppError(`The brand ${req.body.name} already exist`, 409));
-        // uplaod image for brand
-        if(req.file){
-            const {secure_url, public_id} = await cloudinary.uploader.upload(req.file.path,
-                  {folder: `ecommerce/brand`})
-
-            req.body.imgCover = {secure_url, public_id}
-        }
-        // create brand
+        if(isExist) return next(new AppError("This Brand already exist", 409))
+        // upload image
+        const {secure_url, public_id} = await cloudinary.uploader.upload(req.file.path,
+              {folder: `${process.env.FLODER_NAME}/brand`})
+        req.body.image = {secure_url, public_id}
+        // create new brand and save on DB
         const brand = new brandModel(req.body)
         await brand.save()
-        return res.status(201).json({message: "success", brand})
+        res.status(201).json({message: "Success", brand})
     }
 )
 
 export const getAllBrands = catchError(
-    async(req, res, next)=>{
+    async (req, res, next)=>{
         let apiFeatures = new ApiFeatures(brandModel.find({}), req.query)
-        .paginate().fields().filter().sort().search()
-        
-        // exeute query
-        const brands = await apiFeatures.mongooseQuery
-        
-        return res.status(200).json({ message: "success",
+        .paginate().filter().select().search().sort()
+        // execute query
+        const brands = await apiFeatures.mongooseQuery;
+        return res.status(200).json({message: "Success",
         page: apiFeatures.page,
         resulte: brands.length,
         brands})
@@ -39,44 +34,49 @@ export const getAllBrands = catchError(
 )
 
 export const getBrand = catchError(
-    async(req,res,next)=> {
+    async(req, res, next)=>{
         const {id} = req.params
         const brand = await brandModel.findById(id)
-        return res.status(201).json({message: "success", brand})
+        !brand && next(new AppError("Not found this Brand", 409))
+        brand && res.status(200).json({message: "Success", brand})
     }
 )
 
 export const updateBrand = catchError(
     async(req, res, next)=>{
         const {id} = req.params
-        // check if name already exis or not when update brand
+        // get brand by id
+        let brand = await brandModel.findById(id)
+        // check this brand found or no
+        !brand && next(new AppError("Not found this Brand", 409))
+        // check if brand name already exist
         const isExist = await brandModel.findOne({name: req.body.name})
-        if (isExist) return next(new AppError(`The brand ${req.body.name} already exist`, 409));
-        
-        // uplaod image for brand
+        if(isExist) return next(new AppError("This Brand already exist", 409))
+        // update name
+        if(req.body.name){
+            brand.name = req.body.name
+        }
+        // update image
         if(req.file){
+            // delete old image in Cloudinar
+            await cloudinary.uploader.destroy(brand.image.public_id)
+            // upload new image to Cloudinar
             const {secure_url, public_id} = await cloudinary.uploader.upload(req.file.path,
-                    {folder: `ecommerce/brand`})
-            req.body.imgCover = {secure_url, public_id}
+                  {folder: `${process.env.FLODER_NAME}/brand`})
+                  brand.image = {secure_url, public_id}
         }
-
-        // Destroy old image from Cloudinary
-        const brand = await brandModel.findById(id);
-        if (brand.imgCover && req.file) {
-            await cloudinary.uploader.destroy(brand.imgCover.public_id)
-        }
-
-        const updateBrand = await brandModel.findByIdAndUpdate(id, req.body, {new: true})
-        !updateBrand && next(new AppError("brand not found", 404))
-        updateBrand && res.status(201).json({message: "success", brand: updateBrand})
+        await brand.save()
+        brand && res.status(200).json({message: "Success", brand})
     }
 )
 
 export const deleteBrand = catchError(
     async(req, res, next)=>{
         const {id} = req.params
-        const brand = await brandModel.findByIdAndDelete(id)
-        !brand && next(new AppError("brand not found", 404))
-        brand && res.status(201).json({message: "success"})
+        let brand = await brandModel.findByIdAndDelete(id)
+        !brand && next(new AppError("Not found this Brand", 409))
+        // delete image in Cloudinar
+        await cloudinary.uploader.destroy(brand.image.public_id)
+        brand && res.status(200).json({message: "Success"})
     }
 )

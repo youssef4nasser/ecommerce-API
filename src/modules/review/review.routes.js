@@ -1,19 +1,19 @@
-import express from "express"
-import { validate } from "../../middleware/validate.js"
-import { protectedRoutes } from "../../middleware/protectedRoutes.js"
-import { allowedTo } from "../../middleware/authorize.js"
-import { addReview, deleteReview, getAllReviews, getReview, updateReview } from "./review.controller.js"
-import { idVaildationSchema, validationAddReview, validationUpdateReview } from "./review.vaildation.js"
+import express from 'express'
+import * as controller from './review.controller.js'
+import { validate } from '../../middleware/validate.js'
+import { idValidate, validationAddReview, validationUpdateReview } from './review.validation.js'
+import { authenticate } from '../../middleware/authenticate.js'
+import { allowedTo } from '../../middleware/authorize.js'
 
 const reviewRouter = express.Router()
 
 reviewRouter.route('/')
-    .post(protectedRoutes, allowedTo('user'), validate(validationAddReview), addReview)
-    .get(getAllReviews)
+    .post(authenticate, allowedTo("user"), validate(validationAddReview), controller.addReview)
+    .get(controller.getAllReviews)
 
 reviewRouter.route('/:id')
-    .get(validate(idVaildationSchema), getReview)
-    .put(protectedRoutes, allowedTo('user'), validate(validationUpdateReview), updateReview)
-    .delete(protectedRoutes, allowedTo('admin', 'user'), validate(idVaildationSchema), deleteReview)
+    .get(validate(idValidate), controller.getReview)
+    .put(authenticate, allowedTo("user"), validate(validationUpdateReview), controller.updateReview)
+    .delete(authenticate, allowedTo("user", "admin"), validate(idValidate), controller.deleteReview)
 
 export default reviewRouter

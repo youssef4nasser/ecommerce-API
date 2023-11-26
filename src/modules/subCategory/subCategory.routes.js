@@ -1,19 +1,20 @@
-import express from "express"
-import { addSubCategory, deleteSubCategory, getAllSubCategories, getSubCategory, updateSubCategory } from "./subCategory.controller.js"
-import { validate } from "../../middleware/validate.js"
-import { addSubcategorySchema, idVaildationSchema, updateSubCategorySchema } from "./subCategory.validation.js"
-import { allowedTo } from "../../middleware/authorize.js"
-import { protectedRoutes } from "../../middleware/protectedRoutes.js"
+import express from 'express'
+import * as controller from './subCategory.controller.js'
+import { fileUploud, fileValidation } from '../../utils/multer.cloud.js'
+import { validate } from '../../middleware/validate.js'
+import { addSubCategoryValidaion, idValidate, updateSubCategoryValidation } from './subCategory.validation.js'
+import { allowedTo } from '../../middleware/authorize.js'
+import { authenticate } from '../../middleware/authenticate.js'
 
 const subCategoryRouter = express.Router({mergeParams: true})
 
 subCategoryRouter.route('/')
-    .post(protectedRoutes, allowedTo('admin'), validate(addSubcategorySchema), addSubCategory)
-    .get(getAllSubCategories)
+    .post(authenticate, allowedTo("admin"), fileUploud(fileValidation.image).single("image"), validate(addSubCategoryValidaion), controller.addSubCategory)
+    .get(controller.getAllSubCategories)
 
 subCategoryRouter.route('/:id')
-    .get(validate(idVaildationSchema), getSubCategory)
-    .put(protectedRoutes, allowedTo('admin'), validate(updateSubCategorySchema), updateSubCategory)
-    .delete(protectedRoutes, allowedTo('admin'), validate(idVaildationSchema), deleteSubCategory)
+    .get(validate(idValidate), controller.getSubCategory)
+    .put(authenticate, allowedTo("admin"), fileUploud(fileValidation.image).single("image"), validate(updateSubCategoryValidation), controller.updateSubCategory)
+    .delete(authenticate, allowedTo("admin"), validate(idValidate), controller.deleteSubCategory)
 
 export default subCategoryRouter

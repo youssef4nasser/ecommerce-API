@@ -1,15 +1,15 @@
-import express from "express"
-import { protectedRoutes } from "../../middleware/protectedRoutes.js"
-import { allowedTo } from "../../middleware/authorize.js"
-import { addToWishlist, getUserWishlist, removeFromWishlist } from "./wishlist.controller.js"
-import { validate } from "../../middleware/validate.js"
-import { validationaAddToWishlist, validationaRemoveFromWishlist } from "./wishlist.vaildation.js"
+import express from 'express'
+import * as controller from './wishlist.controller.js'
+import { validate } from '../../middleware/validate.js'
+import { authenticate } from '../../middleware/authenticate.js'
+import { allowedTo } from '../../middleware/authorize.js'
+import { idValidate } from './wishlist.validation.js'
 
 const wishlistRouter = express.Router()
 
 wishlistRouter.route('/')
-    .patch(protectedRoutes, allowedTo('user'), validate(validationaAddToWishlist), addToWishlist)
-    .delete(protectedRoutes, allowedTo('user'), validate(validationaRemoveFromWishlist), removeFromWishlist)
-    .get(protectedRoutes, allowedTo('user'), getUserWishlist)
+    .patch(authenticate, allowedTo("user"), validate(idValidate), controller.addToWishlist)
+    .delete(authenticate, allowedTo("user"), validate(idValidate), controller.removeFromWishlist)
+    .get(authenticate, allowedTo("user"), controller.getUserWishlist)
 
 export default wishlistRouter

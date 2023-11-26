@@ -1,25 +1,31 @@
-import { couponModel } from "../../../database/models/coupon.model.js"
-import { ApiFeatures } from "../../utils/ApiFeatures.js"
-import { catchError } from "../../utils/catchError.js"
-import qrcode from 'qrcode'
+import { couponModel } from "../../../DataBase/models/coupon.model.js";
+import { ApiFeatures } from "../../utils/ApiFeature.js";
+import { AppError } from "../../utils/AppError.js";
+import { catchError } from "../../utils/catchError.js";
 
 export const addCoupon = catchError(
-    async(req, res, next)=>{
-        let coupon = new couponModel(req.body)
+    async (req, res, next)=>{
+        // check date 
+        if(req.body.expire < Date.now().toString()){
+            return next(new AppError('Expiration Date must be greater than current date', 403));
+        }
+        // check if coupon already exist or no
+        const isExist = await couponModel.findOne({code: req.body.code})
+        if(isExist) return next(new AppError("This Coupon already exist", 409))
+        // create new coupon and save on DB
+        const coupon = new couponModel(req.body)
         await coupon.save()
-        return res.json({message:"success", coupon})
+        res.status(201).json({message: "Success", coupon})
     }
 )
 
 export const getAllCoupons = catchError(
-    async(req, res, next)=>{
-        let apiFeatures = new ApiFeatures(couponModel.find(), req.query)
-        .paginate().fields().filter().sort().search()
-        
-        // exeute query
+    async (req, res, next)=>{
+        let apiFeatures = new ApiFeatures(couponModel.find({}), req.query)
+        .paginate().filter().select().search().sort()
+        // execute query
         const coupons = await apiFeatures.mongooseQuery
-        
-        return res.status(201).json({ message: "success",
+        return res.status(200).json({message: "Success",
         page: apiFeatures.page,
         resulte: coupons.length,
         coupons})
@@ -27,29 +33,41 @@ export const getAllCoupons = catchError(
 )
 
 export const getCoupon = catchError(
-    async(req,res,next)=> {
+    async(req, res, next)=>{
         const {id} = req.params
         const coupon = await couponModel.findById(id)
-        const urlQrcode = await qrcode.toDataURL(coupon.code)
-        return res.status(201).json({message: "success", coupon, urlQrcode})
+        !coupon && next(new AppError("Not found this Coupon", 409))
+        coupon && res.status(200).json({message: "Success", coupon})
     }
 )
 
 export const updateCoupon = catchError(
     async(req, res, next)=>{
         const {id} = req.params
-        const coupon = await couponModel.findByIdAndUpdate(id, req.body, {new: true})
-    
-        !coupon && next(new AppError("coupon not found", 404))
-        coupon && res.status(201).json({message: "success", coupon})
+        const {code, expires, discount} = req.body
+        // check date
+        if(req.body.expire < date.now()){
+            return next(new AppError('Expiration Date must be greater than current date', 403));
+        }
+        // get coupon by id
+        let coupon = await couponModel.findById(id)
+        // check this coupon found or no
+        !coupon && next(new AppError("Not found this Coupon", 409))
+        // check if coupon code already exist and update
+        const updateCoupon = await couponModel.findOneAndUpdate(
+            {name: req.body.name},
+            {code, expires, discount},
+            {new: true})
+        !updateCoupon && next(new AppError("This Coupon already exist", 409))
+        updateCoupon && res.status(200).json({message: "Success", coupon:updateCoupon})
     }
 )
 
 export const deleteCoupon = catchError(
     async(req, res, next)=>{
         const {id} = req.params
-        const coupon = await couponModel.findByIdAndDelete(id)
-        !coupon && next(new AppError("coupon not found", 404))
-        coupon && res.status(201).json({message: "success"})
+        let coupon = await couponModel.findByIdAndDelete(id)
+        !coupon && next(new AppError("Not found this coupon", 409))
+        coupon && res.status(200).json({message: "Success"})
     }
 )
