@@ -1,6 +1,5 @@
 import mongoose, { Schema, model } from "mongoose";
 import bcrypt from 'bcrypt'
-import { AppError } from "../../src/utils/AppError.js";
 
 const userSchema = new Schema({
     name: {
@@ -43,6 +42,7 @@ const userSchema = new Schema({
         default: false
     },
     passwordChangeAt: Date,
+    expireDateCode: Date,
     wishlist: [{
         type: mongoose.SchemaTypes.ObjectId,
         ref: 'Product'
@@ -56,6 +56,9 @@ const userSchema = new Schema({
         type: String,
         enum: ['google', 'facebook', 'systeme'],
         default:'systeme'
+    },
+    profileImage:{
+        type: String,
     }
 },{
     timestamps: true
@@ -65,9 +68,10 @@ const userSchema = new Schema({
 userSchema.pre('save', function(){
     this.password = bcrypt.hashSync(this.password, Number(process.env.SALT_ROUND))
 })
+
 // Hashing a new Password after update old password
 userSchema.pre('findOneAndUpdate', function(){
     if(this._update.password) this._update.password = bcrypt.hashSync(this._update.password, Number(process.env.SALT_ROUND))
 })
 
-export const userModel = model('User', userSchema)
+export default model('User', userSchema)

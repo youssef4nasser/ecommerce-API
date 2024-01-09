@@ -1,7 +1,7 @@
 
 export const validate = (schema)=>{
     return (req, res, next)=>{
-        const inputs = {...req.params, ...req.boody, ...req.query}
+        const inputs = {...req.params, ...req.body, ...req.query}
 
         if (req.file || req.files) {
             inputs.file = req.file || req.files

@@ -1,4 +1,4 @@
-import { userModel } from "../../../DataBase/models/user.model.js";
+import userModel from "../../../database/models/user.model.js"
 import { AppError } from "../../utils/AppError.js";
 import { catchError } from "../../utils/catchError.js";
 

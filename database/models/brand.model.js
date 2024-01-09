@@ -2,7 +2,7 @@ import { Schema, model } from "mongoose";
 import slugify from "slugify";
 
 const brandSchema = new Schema({
-    name: {
+    name: { 
         type : String,
         required:[true,'brand Name is Required'],
         unique: true,
@@ -33,4 +33,4 @@ brandSchema.pre('findOneAndUpdate', function() {
     }
 });
 
-export const brandModel = model('Brand', brandSchema)
+export default model("Brand", brandSchema)

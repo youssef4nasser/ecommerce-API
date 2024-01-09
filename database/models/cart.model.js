@@ -21,4 +21,4 @@ const cartSchema = new Schema({
 }, {timestamps: true})
 
 
-export const cartModel = model('Cart', cartSchema)
+export default model('Cart', cartSchema)

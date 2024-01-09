@@ -4,7 +4,7 @@ const emailValidation = Joi.string().email({ minDomainSegments: 2, tlds: { allow
 const passwordValidation = Joi.string().min(6).max(30).required()
 
 export const signUpValidationa = Joi.object({
-    name: Joi.string().max(100).required(),
+    name: Joi.string().max(200).required(),
     email: emailValidation,
     password: passwordValidation
 })
@@ -14,12 +14,21 @@ export const signInValidationa = Joi.object({
     password: passwordValidation
 })
 
+export const VerifyCodeValidationa = Joi.object({
+    email: emailValidation,
+    newPassword: passwordValidation,
+    code: Joi.string().length(6)
+})
+
 export const confirmValidation = Joi.object({
     email: emailValidation,
     code: Joi.string().length(6)
 })
 
+export const forgetPasswordValidation = Joi.object({
+    email: emailValidation,
+})
+
 export const signInGoogleValidationa = Joi.object({
     idToken:  Joi.string().required(),
 })
-

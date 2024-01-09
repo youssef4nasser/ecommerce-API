@@ -37,4 +37,4 @@ subCategorySchema.pre('findOneAndUpdate', function() {
     }
 });
 
-export const subCategoryModel = model('SubCategory', subCategorySchema)
+export default model('SubCategory', subCategorySchema)

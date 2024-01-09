@@ -1,6 +1,6 @@
-import { categoryModel } from "../../../DataBase/models/category.model.js";
-import { subCategoryModel } from "../../../DataBase/models/subcategory.model.js";
-import { ApiFeatures } from "../../utils/ApiFeature.js";
+import categoryModel from "../../../database/models/category.model.js";
+import subcategoryModel from "../../../database/models/subcategory.model.js";
+import { ApiFeatures } from "../../utils/ApiFeatures.js";
 import { AppError } from "../../utils/AppError.js";
 import { catchError } from "../../utils/catchError.js";
 import cloudinary from "../../utils/cloudinary.js";
@@ -8,7 +8,7 @@ import cloudinary from "../../utils/cloudinary.js";
 export const addSubCategory = catchError(
     async (req, res, next)=>{
         // check if subCategory already exist or no
-        const isExist = await subCategoryModel.findOne({name: req.body.name})
+        const isExist = await subcategoryModel.findOne({name: req.body.name})
         if(isExist) return next(new AppError("This SubCategory already exist", 409))
         // Check if the Category exists
         const category = await categoryModel.findById(req.body.category)

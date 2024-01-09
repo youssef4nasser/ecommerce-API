@@ -1,20 +1,17 @@
-import express from "express"
-import { addUser, changeUserPassword, deleteUser, getAllUsers, getUser, updateUser } from "./user.controller.js"
-import { idVaildationSchema, validationUpdateUser, validationaAddUser, validationchangePassword } from "./user.vaildation.js"
-import { allowedTo } from "../../middleware/authorize.js"
-import { validate } from "../../middleware/validate.js"
-import { protectedRoutes } from "../../middleware/protectedRoutes.js"
+import express from 'express'
+import { confirmNewEmail, getProfile, profileImage, updateProfile } from './user.controller.js'
+import { fileUpload, fileValidation } from '../../utils/multer.cloud.js'
+import { validate } from '../../middleware/validate.js'
+import { confirmValidation, updateProfileValidation } from './user.validation.js'
+import { authenticate } from '../../middleware/authenticate.js'
 
 const userRouter = express.Router()
 
 userRouter.route('/')
-    .post(protectedRoutes, allowedTo('admin'), validate(validationaAddUser), addUser)
-    .get(protectedRoutes, allowedTo('admin'), getAllUsers)
+    .get(authenticate, getProfile)
+    .put(authenticate, validate(updateProfileValidation), updateProfile)
 
-userRouter.route('/:id')
-    .get(protectedRoutes, allowedTo('admin'), validate(idVaildationSchema), getUser)
-    .put(protectedRoutes, allowedTo('admin'), validate(validationUpdateUser), updateUser)
-    .delete(protectedRoutes, allowedTo('admin'), validate(idVaildationSchema), deleteUser)
-    .patch(protectedRoutes, allowedTo('user'), validate(validationchangePassword), changeUserPassword)
+userRouter.patch('/confirm', authenticate,validate(confirmValidation), confirmNewEmail)
+userRouter.patch('/profileImage', authenticate, fileUpload(fileValidation.image).single('image'), profileImage)
 
 export default userRouter

@@ -1,5 +1,4 @@
-import mongoose, { Schema, model } from "mongoose";
-import { AppError } from "../../src/utils/AppError.js";
+import { Schema, model } from "mongoose";
 
 const couponSchema = new Schema({
     code: {
@@ -25,4 +24,4 @@ const couponSchema = new Schema({
     timestamps: true
 })
 
-export const couponModel = model('Coupon', couponSchema)
+export default model("Coupon", couponSchema);

@@ -1,5 +1,5 @@
-import { categoryModel } from "../../../DataBase/models/category.model.js";
-import { ApiFeatures } from "../../utils/ApiFeature.js";
+import categoryModel from "../../../database/models/category.model.js";
+import { ApiFeatures } from "../../utils/ApiFeatures.js";
 import { AppError } from "../../utils/AppError.js";
 import { catchError } from "../../utils/catchError.js";
 import cloudinary from "../../utils/cloudinary.js";

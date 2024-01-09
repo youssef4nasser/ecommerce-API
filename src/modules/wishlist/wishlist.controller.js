@@ -1,5 +1,5 @@
-import { userModel } from "../../../DataBase/models/user.model.js";
-import { productModel } from "../../../DataBase/models/product.model.js";
+import productModel from "../../../database/models/product.model.js";
+import userModel from "../../../database/models/user.model.js";
 import { AppError } from "../../utils/AppError.js";
 import { catchError } from "../../utils/catchError.js";
 

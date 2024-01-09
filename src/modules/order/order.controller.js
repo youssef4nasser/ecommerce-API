@@ -1,10 +1,9 @@
 import Stripe from 'stripe';
-import { cartModel } from "../../../database/models/cart.model.js"
-import { orderModel } from "../../../database/models/order.model.js"
-import { productModel } from "../../../database/models/product.model.js"
 import { AppError } from "../../utils/AppError.js"
 import { catchError } from "../../utils/catchError.js"
-import { userModel } from '../../../database/models/user.model.js';
+import productModel from '../../../database/models/product.model.js';
+import userModel from '../../../database/models/user.model.js';
+import cartModel from "../../../database/models/cart.model.js"
 
 export const cashOrder = catchError(
     async(req, res, next)=>{

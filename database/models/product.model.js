@@ -1,6 +1,5 @@
-import mongoose, { Schema,model } from "mongoose";
+import { Schema,model } from "mongoose";
 import slugify from "slugify";
-import { AppError } from "../../src/utils/AppError.js";
 
 const productSchema = new Schema({
     name: {
@@ -96,4 +95,4 @@ productSchema.pre(['find', 'findOne'], function(){
     this.populate('reviews')
 })
 
-export const productModel = model('Product', productSchema)
+export default model('Product', productSchema)

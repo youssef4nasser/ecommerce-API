@@ -1,6 +1,6 @@
-import { cartModel } from "../../../database/models/cart.model.js"
-import { couponModel } from "../../../database/models/coupon.model.js"
-import { productModel } from "../../../database/models/product.model.js"
+import couponModel from "../../../database/models/coupon.model.js"
+import cartModel from "../../../database/models/cart.model.js"
+import productModel from "../../../database/models/product.model.js"
 import { AppError } from "../../utils/AppError.js"
 import { catchError } from "../../utils/catchError.js"
 

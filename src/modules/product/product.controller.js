@@ -1,8 +1,8 @@
-import { brandModel } from "../../../DataBase/models/brand.model.js";
-import { categoryModel } from "../../../DataBase/models/category.model.js";
-import { productModel } from "../../../DataBase/models/product.model.js";
-import { subCategoryModel } from "../../../DataBase/models/subcategory.model.js";
-import { ApiFeatures } from "../../utils/ApiFeature.js";
+import brandModel from "../../../database/models/brand.model.js";
+import categoryModel from "../../../database/models/category.model.js";
+import productModel from "../../../database/models/product.model.js";
+import subcategoryModel from "../../../database/models/subcategory.model.js";
+import { ApiFeatures } from "../../utils/ApiFeatures.js";
 import { AppError } from "../../utils/AppError.js";
 import { catchError } from "../../utils/catchError.js";
 import cloudinary from "../../utils/cloudinary.js";
@@ -19,7 +19,7 @@ export const addProduct = catchError(
         const category = await categoryModel.findById(req.body.category)
         if(!category) return next(new AppError('The Category does not exist', 404));
         // Check the subCategory
-        const subCategory = await subCategoryModel.findById(req.body.subCategory)
+        const subCategory = await subcategoryModel.findById(req.body.subCategory)
         if(!subCategory) return next(new AppError('The SubCategory does not exist', 404));
 
         // upload main image

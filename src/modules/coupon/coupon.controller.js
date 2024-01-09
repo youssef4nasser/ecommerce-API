@@ -1,5 +1,5 @@
-import { couponModel } from "../../../DataBase/models/coupon.model.js";
-import { ApiFeatures } from "../../utils/ApiFeature.js";
+import  couponModel  from "../../../database/models/coupon.model.js";
+import { ApiFeatures } from "../../utils/ApiFeatures.js";
 import { AppError } from "../../utils/AppError.js";
 import { catchError } from "../../utils/catchError.js";
 

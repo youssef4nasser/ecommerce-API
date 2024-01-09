@@ -1,9 +1,9 @@
-import { reviewModel } from "../../../DataBase/models/review.model.js";
-import { productModel } from "../../../DataBase/models/product.model.js";
-import { orderModel } from "../../../DataBase/models/order.model.js";
 import { AppError } from "../../utils/AppError.js";
 import { catchError } from "../../utils/catchError.js";
-import { ApiFeatures } from "../../utils/ApiFeature.js";
+import { ApiFeatures } from "../../utils/ApiFeatures.js";
+import productModel from "../../../database/models/product.model.js";
+import orderModel from "../../../database/models/order.model.js";
+import reviewModel from "../../../database/models/review.model.js";
 
 export const addReview = catchError(
     async (req, res, next)=>{

@@ -32,4 +32,4 @@ categorySchema.pre('findOneAndUpdate', async function(next){
     }
 })
 
-export const categoryModel = model('Category', categorySchema)
+export default model('Category', categorySchema)

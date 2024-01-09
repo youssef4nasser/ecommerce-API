@@ -39,4 +39,4 @@ const orderSchema = new Schema({
 
 }, {timestamps: true})
 
-export const orderModel = model('Order', orderSchema)
+export default model('Order', orderSchema)

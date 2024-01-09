@@ -1,4 +1,4 @@
-import { Schema, mongoose } from "mongoose";
+import { Schema, model, mongoose } from "mongoose";
 
 const reviewSchema = new Schema({
     review: {
@@ -27,4 +27,4 @@ reviewSchema.pre(['findOne', 'find'], function(){
     this.populate("user", "firstName lastName")
 })
 
-export const reviewModel = mongoose.model('Review', reviewSchema)
+export default model('Review', reviewSchema)
